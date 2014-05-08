@@ -1,12 +1,14 @@
-console.log 'Oh herro!'
+Context = require './app/coffee/context'
+Router = require './app/coffee/router'
+BasePageView = require './app/coffee/view/page/base/base-page-view'
 
-#################################################
+# -----------------------------------------------
 
-Context = require './coffee/context'
-Router = require './coffee/router'
-BasePageView = require './coffee/view/page/base/base-page-view'
-
-console.log BasePageView::getInstance()
+#
+# load config
+#
+configJson = require 'config'
+Context::getInstance().setConfig(configJson)
 
 # -----------------------------------------------
 

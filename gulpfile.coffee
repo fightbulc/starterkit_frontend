@@ -1,45 +1,69 @@
+path = require 'path'
 gulp = require 'gulp'
 gutil = require 'gulp-util'
+jade = require 'gulp-jade'
+clean = require 'gulp-clean'
 webpack = require 'webpack'
-WebpackDevServer = require 'webpack-dev-server'
 webpackConfig = require './webpack.config.coffee'
 
+# -----------------------------------------------
 
+#
 # Default task
-gulp.task 'default', ['webpack:dev'], ->
+#
+gulp.task 'default', ['webpack:build-dev'], ->
 
+# -----------------------------------------------
 
-############################################################
+#
 # Development build
-############################################################
-gulp.task 'webpack:dev', (callback) ->
+#
+gulp.task 'webpack:build-dev', (callback) ->
   # modify some webpack config options
   conf = Object.create webpackConfig
+  conf.output.path = path.join(__dirname, "public/assets/app")
   conf.devtool = 'source-map'
   conf.debug = true
   conf.watch = true
 
+  # render bootstrap html
+  gulp.src('./src/bootstrap.jade')
+  .pipe(jade locals: {})
+  .pipe(gulp.dest('./public/assets/app'))
+
   # run webpack
   webpack conf, (err, stats) ->
-    throw new gutil.PluginError('webpack:dev', err) if err
-    gutil.log '[webpack:dev]', stats.toString colors: true
+    throw new gutil.PluginError('webpack:build-dev', err) if err
+    gutil.log '[webpack:build-dev]', stats.toString colors: true
     callback()
 
-############################################################
-# Production build
-############################################################
-gulp.task 'build', ['webpack:build'], ->
-gulp.task 'webpack:build', (callback) ->
+# -----------------------------------------------
 
+#
+# Production build
+#
+gulp.task 'live', ['webpack:build-live'], ->
+gulp.task 'webpack:build-live', (callback) ->
   # modify some webpack config options
-  conf = Object.create(webpackConfig)
-  conf.plugins = conf.plugins.concat new webpack.DefinePlugin
-    'process.env':
-      NODE_ENV: JSON.stringify('production')
-  , new webpack.optimize.DedupePlugin(), new webpack.optimize.UglifyJsPlugin()
+  conf = Object.create webpackConfig
+  conf.output.path = path.join(__dirname, "build/public/assets/app")
+  conf.resolve.alias.config = 'config/config.live.coffee'
+
+  # clean build folder
+  gulp.src(['build/public/*'], {read: false})
+  .pipe(clean(force: true))
+
+  # render bootstrap html
+  gulp.src('./src/bootstrap.jade')
+  .pipe(jade locals: {})
+  .pipe(gulp.dest('./build/public/assets/app'))
+
+  # copy bootstrap html & index.php
+  gulp.src('./public/index.php')
+  .pipe(gulp.dest('./build/public'))
 
   # run webpack
   webpack conf, (err, stats) ->
-    throw new gutil.PluginError('webpack:build', err) if err
-    gutil.log '[webpack:build]', stats.toString colors: true
+    throw new gutil.PluginError('webpack:build-live', err) if err
+    gutil.log '[webpack:build-live]', stats.toString colors: true
     callback()

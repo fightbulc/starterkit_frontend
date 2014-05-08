@@ -1,2 +1,2 @@
 # load styles
-require 'less/app.less'
+require 'app/less/app.less'
