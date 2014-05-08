@@ -2,7 +2,6 @@ path = require 'path'
 gulp = require 'gulp'
 gutil = require 'gulp-util'
 jade = require 'gulp-jade'
-clean = require 'gulp-clean'
 webpack = require 'webpack'
 webpackConfig = require './webpack.config.coffee'
 
@@ -48,10 +47,6 @@ gulp.task 'webpack:build-live', (callback) ->
   conf = Object.create webpackConfig
   conf.output.path = path.join(__dirname, "build/public/assets/app")
   conf.resolve.alias.config = 'config/config.live.coffee'
-
-  # clean build folder
-  gulp.src(['build/public/*'], {read: false})
-  .pipe(clean(force: true))
 
   # render bootstrap html
   gulp.src('./src/bootstrap.jade')
